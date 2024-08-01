@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Strategy Effectiveness Prediction</title>
+    <style>
+        body {
+            background-color: #000;
+            color: #fff;
+            font-family: 'Montserrat', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        h1 {
+            margin-bottom: 20px;
+        }
+        .upload-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .upload-container input[type="file"] {
+            display: none;
+        }
+        .upload-container label {
+            background-color: #444;
+            padding: 10px 20px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        .upload-container button {
+            background-color: #ffcc00;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+        .output-container, .data-container {
+            margin-top: 20px;
+            width: 100%;
+            max-width: 600px;
+            border: 1px solid #444;
+            padding: 20px;
+            border-radius: 5px;
+        }
+        .highlight {
+            color: #ffcc00;
+            font-weight: bold;
+        }
+        pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        .file-name {
+            margin-top: 10px;
+            color: #ffcc00;
+        }
+    </style>
+</head>
+<body>
+    <h1>Strategy Effectiveness Prediction</h1>
+    <div class="upload-container">
+        <form id="upload-form">
+            <input type="file" id="file" name="file" accept=".csv">
+            <label for="file">Select CSV</label>
+            <button type="submit">Upload</button>
+        </form>
+        <div class="file-name" id="file-name"></div>
+    </div>
+    <div class="output-container">
+        <h3>Overall Outcome:</h3>
+        <pre id="output"></pre>
+    </div>
+    <div class="data-container">
+        <h3>Uploaded Data:</h3>
+        <pre id="data"></pre>
+    </div>
+    <script>
+        document.getElementById('file').addEventListener('change', function() {
+            const fileInput = this;
+            if (fileInput.files.length > 0) {
+                const fileName = fileInput.files[0].name;
+                document.getElementById('file-name').textContent = `Selected File: ${fileName}`;
+            }
+        });
+
+        document.getElementById('upload-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const fileInput = document.getElementById('file');
+            if (fileInput.files.length === 0) {
+                alert("Please select a CSV file.");
+                return;
+            }
+            
+            const formData = new FormData();
+            formData.append('file', fileInput.files[0]);
+
+            try {
+                const response = await fetch('/predict', {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    document.getElementById('output').textContent = data.overall_outcome;
+                    document.getElementById('data').textContent = JSON.stringify(data.individual_predictions, null, 2);
+                } else {
+                    alert("Error: " + data.error);
+                }
+            } catch (error) {
+                alert("An error occurred: " + error.message);
+            }
+        });
+    </script>
+</body>
+</html>
